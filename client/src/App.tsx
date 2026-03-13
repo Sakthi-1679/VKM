@@ -3,6 +3,7 @@ import React, { useEffect, useState, lazy, Suspense, useCallback, memo } from 'r
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { UserRole, OrderStatus } from './types';
@@ -80,6 +81,8 @@ const History: React.FC = () => {
     return `ETA: ${hours}h ${mins}m`;
   };
 
+  const { t } = useLanguage();
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       {/* Emerald Header */}
@@ -92,14 +95,14 @@ const History: React.FC = () => {
               <Package className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Your Activity</h1>
-              <p className="text-emerald-100 text-sm font-medium mt-0.5">Track your orders &amp; requests</p>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{t('history_title')}</h1>
+              <p className="text-emerald-100 text-sm font-medium mt-0.5">{t('history_subtitle')}</p>
             </div>
           </div>
           {adminPhone && (
             <div className="bg-white/20 backdrop-blur-sm text-white px-4 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 border border-white/20 self-start sm:self-auto">
               <Phone className="h-4 w-4" />
-              Store Support: {adminPhone}
+              {t('store_support')}: {adminPhone}
             </div>
           )}
         </div>
@@ -107,12 +110,12 @@ const History: React.FC = () => {
 
       <section>
         <h2 className="text-lg font-black mb-5 flex items-center gap-2 text-gray-800">
-          <ShoppingBag className="h-5 w-5 text-emerald-500" /> Product Orders
+          <ShoppingBag className="h-5 w-5 text-emerald-500" /> {t('product_orders')}
         </h2>
         {orders.length === 0 ? (
           <div className="text-center py-12 bg-emerald-50 rounded-2xl border border-dashed border-emerald-200">
             <ShoppingBag className="h-10 w-10 text-emerald-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">You haven't placed any orders yet.</p>
+            <p className="text-gray-500 font-medium">{t('no_orders')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -128,7 +131,7 @@ const History: React.FC = () => {
                         <h3 className="font-black text-gray-900 line-clamp-1 text-sm" title={order.productTitle}>{order.productTitle}</h3>
                         <StatusBadge status={order.status} />
                       </div>
-                      <p className="text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">Order #{order.id}</p>
+                      <p className="text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">{t('order_label')}{order.id}</p>
                       {order.status === OrderStatus.CONFIRMED && (
                         <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
                           <Clock className="h-3 w-3" /> {getTimeStatus(order.expectedDeliveryAt)}
@@ -137,13 +140,13 @@ const History: React.FC = () => {
                       {order.description && <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded-lg mt-2 italic line-clamp-2">"{order.description}"</p>}
                     </div>
                     <div className="mt-2 pt-2 border-t flex justify-between items-end">
-                      <div className="text-xs text-gray-500 font-bold">Qty: {order.quantity}</div>
+                      <div className="text-xs text-gray-500 font-bold">{t('qty_label')} {order.quantity}</div>
                       <div className="text-base font-black text-emerald-600">₹{order.totalPrice}</div>
                     </div>
                   </div>
                 </div>
                 <div className="bg-emerald-50/50 px-4 py-2 border-t border-emerald-100 text-[10px] text-gray-400 flex justify-between items-center">
-                  <span className="uppercase font-bold tracking-wider">Ordered: {new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span className="uppercase font-bold tracking-wider">{t('ordered_label')} {new Date(order.createdAt).toLocaleDateString()}</span>
                   <span className="flex items-center gap-1 text-emerald-500 font-bold"><Phone className="h-3 w-3" /> {adminPhone}</span>
                 </div>
               </div>
@@ -154,12 +157,12 @@ const History: React.FC = () => {
 
       <section>
         <h2 className="text-lg font-black mb-5 flex items-center gap-2 text-gray-800">
-          <FileText className="h-5 w-5 text-emerald-500" /> Custom Requests
+          <FileText className="h-5 w-5 text-emerald-500" /> {t('custom_requests')}
         </h2>
         {customOrders.length === 0 ? (
           <div className="text-center py-12 bg-emerald-50 rounded-2xl border border-dashed border-emerald-200">
             <FileText className="h-10 w-10 text-emerald-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">No custom requests found.</p>
+            <p className="text-gray-500 font-medium">{t('no_custom')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -167,7 +170,7 @@ const History: React.FC = () => {
               <div key={o.id} className="bg-white rounded-2xl shadow-sm border-l-4 border-l-emerald-500 border border-gray-100 p-5 hover:shadow-md hover:border-l-emerald-600 transition-all flex flex-col">
                 <div className="flex justify-between items-start mb-3 gap-2">
                   <div>
-                    <h3 className="font-black text-gray-900 text-sm">Request #{o.id}</h3>
+                    <h3 className="font-black text-gray-900 text-sm">{t('request_label')}{o.id}</h3>
                     <div className="text-[10px] text-gray-400 flex items-center gap-1 mt-1 font-bold uppercase tracking-wider">
                       <Clock className="h-3 w-3" /> {new Date(o.createdAt).toLocaleDateString()}
                     </div>
@@ -180,7 +183,7 @@ const History: React.FC = () => {
                 </p>
 
                 <div className="text-xs text-emerald-600 mb-3 font-bold">
-                  <p>Required by: {o.requestedDate} at {o.requestedTime}</p>
+                  <p>{t('required_by')} {o.requestedDate} at {o.requestedTime}</p>
                   {o.status === OrderStatus.CONFIRMED && (
                     <p className="flex items-center gap-1 mt-1">
                       <Clock className="h-3 w-3" /> {getTimeStatus(o.deadlineAt)}
@@ -199,7 +202,7 @@ const History: React.FC = () => {
                 )}
 
                 <div className="pt-3 border-t mt-auto text-[10px] flex justify-end">
-                  <span className="flex items-center gap-1 text-emerald-500 font-bold uppercase tracking-widest"><Phone className="h-3 w-3" /> Contact Shop: {adminPhone}</span>
+                  <span className="flex items-center gap-1 text-emerald-500 font-bold uppercase tracking-widest"><Phone className="h-3 w-3" /> {t('store_support')}: {adminPhone}</span>
                 </div>
               </div>
             ))}
@@ -232,25 +235,27 @@ ProtectedRoute.displayName = 'ProtectedRoute';
 
 const App: React.FC = () => {
   return (
-    <NotificationProvider>
-      <AuthProvider>
-        <HashRouter>
-          <Layout>
-            {/* PERF: Suspense wraps lazy-loaded routes with a lightweight spinner */}
-            <Suspense fallback={<PageSpinner />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/custom-order" element={<ProtectedRoute customerOnly><CustomOrderForm /></ProtectedRoute>} />
-                <Route path="/history" element={<ProtectedRoute customerOnly><History /></ProtectedRoute>} />
-                <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
-              </Routes>
-            </Suspense>
-          </Layout>
-        </HashRouter>
-      </AuthProvider>
-    </NotificationProvider>
+    <LanguageProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <HashRouter>
+            <Layout>
+              {/* PERF: Suspense wraps lazy-loaded routes with a lightweight spinner */}
+              <Suspense fallback={<PageSpinner />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/custom-order" element={<ProtectedRoute customerOnly><CustomOrderForm /></ProtectedRoute>} />
+                  <Route path="/history" element={<ProtectedRoute customerOnly><History /></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+                </Routes>
+              </Suspense>
+            </Layout>
+          </HashRouter>
+        </AuthProvider>
+      </NotificationProvider>
+    </LanguageProvider>
   );
 };
 
