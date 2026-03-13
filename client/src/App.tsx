@@ -65,9 +65,8 @@ const History: React.FC = () => {
 
   React.useEffect(() => {
     load();
-    // PERF: Increased polling interval from 10s to 30s – reduces server load by 3x
-    // while still providing reasonably fresh data for order tracking
-    const interval = setInterval(load, 30000);
+    // Poll every 5 seconds for responsive order status updates
+    const interval = setInterval(load, 5000);
     return () => clearInterval(interval);
   }, [user, load]);
 

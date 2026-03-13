@@ -54,7 +54,7 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     loadData(true); // load phone only on first mount
-    const interval = setInterval(() => loadData(false), 10000); // poll orders/products, NOT phone
+    const interval = setInterval(() => loadData(false), 5000); // poll orders/products, NOT phone
     return () => clearInterval(interval);
   }, []);
 
@@ -101,16 +101,19 @@ export const AdminDashboard: React.FC = () => {
       };
       
       if (editingProduct) {
+        // Optimistic update: reflect changes in UI immediately
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData } : p));
+        resetForm();
         await updateProduct(editingProduct.id, productData);
         notify("Product updated successfully!", "success");
       } else {
-        await addProduct(productData as Product);
+        resetForm();
+        const saved = await addProduct(productData as Product);
+        setProducts(prev => [...prev, saved]);
         notify("Product added to catalog!", "success");
       }
-      
-      resetForm();
-      await loadData();
     } catch (err: any) {
+      await loadData(); // revert optimistic update on error
       notify(`Error: ${err.message}`, "error");
     } finally {
       setIsSubmitting(false);
@@ -157,11 +160,36 @@ export const AdminDashboard: React.FC = () => {
       "Delete Product?",
       "This item will be permanently removed from the catalog. This cannot be undone.",
       async () => {
+        // Optimistic update: remove immediately from UI
+        setProducts(prev => prev.filter(p => p.id !== id));
         try {
           await deleteProduct(id);
-          await loadData();
           notify("Product deleted.", "success");
         } catch (err: any) {
+          await loadData(); // revert on error
+          notify(`Failed: ${err.message}`, "error");
+        }
+      }
+    );
+  };
+
+  const handleDeleteOrder = (type: 'normal' | 'custom', id: string) => {
+    confirm(
+      "Delete Record?",
+      "This order record will be permanently deleted.",
+      async () => {
+        // Optimistic update: remove immediately from UI
+        if (type === 'normal') {
+          setOrders(prev => prev.filter(o => o.id !== id));
+        } else {
+          setCustomOrders(prev => prev.filter(o => o.id !== id));
+        }
+        try {
+          const action = type === 'normal' ? deleteOrder(id) : deleteCustomOrder(id);
+          await action;
+          notify("Record deleted.", "success");
+        } catch (err: any) {
+          await loadData(); // revert on error
           notify(`Failed: ${err.message}`, "error");
         }
       }
@@ -169,11 +197,30 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const handleStatusUpdate = async (type: 'normal' | 'custom', id: string, status: OrderStatus) => {
+    // Optimistic update: reflect status change in UI immediately
+    // Capture old status before updating state to avoid stale closure issues
+    if (type === 'normal') {
+      const oldStatus = orders.find(o => o.id === id)?.status;
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+      if (oldStatus === OrderStatus.PENDING && status !== OrderStatus.PENDING) {
+        setPendingOrdersCount(prev => Math.max(0, prev - 1));
+      } else if (oldStatus !== OrderStatus.PENDING && status === OrderStatus.PENDING) {
+        setPendingOrdersCount(prev => prev + 1);
+      }
+    } else {
+      const oldStatus = customOrders.find(o => o.id === id)?.status;
+      setCustomOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+      if (oldStatus === OrderStatus.PENDING && status !== OrderStatus.PENDING) {
+        setPendingCustomCount(prev => Math.max(0, prev - 1));
+      } else if (oldStatus !== OrderStatus.PENDING && status === OrderStatus.PENDING) {
+        setPendingCustomCount(prev => prev + 1);
+      }
+    }
     try {
         await updateOrderStatus(type, id, status);
-        await loadData();
         notify(`Order status updated to ${status}.`, "success");
     } catch (err) {
+        await loadData(); // revert optimistic update on error
         notify('Failed to update status', 'error');
     }
   };
@@ -303,10 +350,7 @@ export const AdminDashboard: React.FC = () => {
              </button>
            )}
            {(order.status === OrderStatus.COMPLETED || order.status === OrderStatus.CANCELLED) && (
-             <button onClick={() => confirm("Delete Record?", "This order record will be permanently deleted.", () => {
-                const action = order.type === 'normal' ? deleteOrder(order.id) : deleteCustomOrder(order.id);
-                action.then(() => { loadData(); notify("Record deleted.", "success"); });
-             })} className="text-slate-500 hover:text-red-400 p-3 rounded-full hover:bg-red-900/20 transition-all mx-auto">
+             <button onClick={() => handleDeleteOrder(order.type, order.id)} className="text-slate-500 hover:text-red-400 p-3 rounded-full hover:bg-red-900/20 transition-all mx-auto">
                 <Trash2 className="h-6 w-6" />
              </button>
            )}
@@ -515,10 +559,7 @@ export const AdminDashboard: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-3 ml-auto">
                         <StatusBadge status={o.status} />
-                        <button onClick={() => confirm("Delete Record?", "This order record will be permanently deleted.", () => {
-                          const action = o.type === 'normal' ? deleteOrder(o.id) : deleteCustomOrder(o.id);
-                          action.then(() => { loadData(); notify("Record deleted.", "success"); });
-                        })} className="text-slate-600 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded-full">
+                        <button onClick={() => handleDeleteOrder(o.type, o.id)} className="text-slate-600 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded-full">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
