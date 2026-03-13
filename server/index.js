@@ -1029,7 +1029,7 @@ router.post('/custom-orders', verifyToken, verifyCsrfToken, async (req, res) => 
     const sanitized = sanitizeBody(req.body);
     const { userId, description, requestedDate, requestedTime, contactName, contactPhone, images } = sanitized;
     // SECURITY: Validate required fields and phone format
-    if (!userId || !description || !requestedDate || !contactName || !contactPhone) {
+    if (!userId || !requestedDate || !contactName || !contactPhone) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     if (!/^\d{10}$/.test(contactPhone)) {

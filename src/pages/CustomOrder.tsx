@@ -195,7 +195,7 @@ export const CustomOrderForm: React.FC = () => {
             <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
               <FileText className="h-3.5 w-3.5 text-orange-500" /> Describe Your Request
             </label>
-            <textarea required rows={5} className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all resize-none"
+            <textarea rows={5} className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all resize-none"
               placeholder="Tell us about the colors, flower types, occasion, and any specific requirements..."
               value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
             />

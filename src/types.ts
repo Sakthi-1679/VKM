@@ -17,7 +17,7 @@ export interface User {
 export interface Product {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   price: number;
   durationHours: number;
   images: string[];
@@ -48,7 +48,7 @@ export interface Order {
 export interface CustomOrder {
   id: string;
   userId: string;
-  description: string;
+  description?: string;
   requestedDate: string;
   requestedTime: string;
   contactName: string;
