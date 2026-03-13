@@ -94,7 +94,7 @@ export const AdminDashboard: React.FC = () => {
     try {
       const productData = {
         title: newProd.title,
-        description: newProd.description || '',
+        description: newProd.description || undefined,
         price: Number(newProd.price),
         durationHours: Number(newProd.durationHours),
         images: newProd.images && newProd.images.length > 0 
@@ -459,7 +459,7 @@ export const AdminDashboard: React.FC = () => {
 
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('admin_description')}</label>
-                  <textarea rows={4} className="w-full bg-slate-700 border-2 border-slate-600 text-white placeholder-slate-500 p-3 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium transition-all resize-none" value={newProd.description ?? ''} onChange={e => setNewProd({...newProd, description: e.target.value})} />
+                  <textarea rows={4} className="w-full bg-slate-700 border-2 border-slate-600 text-white placeholder-slate-500 p-3 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium transition-all resize-none" value={newProd.description ?? ''} onChange={e => setNewProd({...newProd, description: e.target.value || undefined})} />
                 </div>
                 <div className="md:col-span-2 flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-slate-700">
                   <button type="button" onClick={resetForm} className="px-6 py-3 text-slate-400 font-bold hover:bg-slate-700 rounded-2xl uppercase tracking-widest text-xs transition-all">{t('admin_cancel')}</button>
