@@ -10,6 +10,7 @@ import {
   getAllCustomOrders, deleteCustomOrder
 } from '../services/storage';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Plus, Trash2, Clock, Upload, X, Bell, Phone, User as UserIcon, MapPin, FileText, CheckCircle2, AlertCircle, ShoppingBag, ListChecks, Sparkles, Loader2, FileDigit, Pencil, Ban } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -25,6 +26,7 @@ export const AdminDashboard: React.FC = () => {
   const [adminPhone, setAdminPhone] = useState('');
 
   const { notify, confirm } = useNotification();
+  const { t } = useLanguage();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newProd, setNewProd] = useState<Partial<Product>>({ title: '', price: undefined, durationHours: undefined, description: '', images: [] });
 
@@ -54,7 +56,7 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     loadData(true); // load phone only on first mount
-    const interval = setInterval(() => loadData(false), 10000); // poll orders/products, NOT phone
+    const interval = setInterval(() => loadData(false), 5000); // poll orders/products, NOT phone
     return () => clearInterval(interval);
   }, []);
 
@@ -92,7 +94,7 @@ export const AdminDashboard: React.FC = () => {
     try {
       const productData = {
         title: newProd.title,
-        description: newProd.description || '',
+        description: newProd.description || undefined,
         price: Number(newProd.price),
         durationHours: Number(newProd.durationHours),
         images: newProd.images && newProd.images.length > 0 
@@ -101,16 +103,19 @@ export const AdminDashboard: React.FC = () => {
       };
       
       if (editingProduct) {
+        // Optimistic update: reflect changes in UI immediately
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productData } : p));
+        resetForm();
         await updateProduct(editingProduct.id, productData);
         notify("Product updated successfully!", "success");
       } else {
-        await addProduct(productData as Product);
+        resetForm();
+        const saved = await addProduct(productData as Product);
+        setProducts(prev => [...prev, saved]);
         notify("Product added to catalog!", "success");
       }
-      
-      resetForm();
-      await loadData();
     } catch (err: any) {
+      await loadData(); // revert optimistic update on error
       notify(`Error: ${err.message}`, "error");
     } finally {
       setIsSubmitting(false);
@@ -125,7 +130,7 @@ export const AdminDashboard: React.FC = () => {
 
   const startEditProduct = (product: Product) => {
     setEditingProduct(product);
-    setNewProd({ ...product });
+    setNewProd({ ...product, description: product.description ?? '' });
     setIsAddingProduct(true);
     // Scroll to top to see form
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -157,11 +162,36 @@ export const AdminDashboard: React.FC = () => {
       "Delete Product?",
       "This item will be permanently removed from the catalog. This cannot be undone.",
       async () => {
+        // Optimistic update: remove immediately from UI
+        setProducts(prev => prev.filter(p => p.id !== id));
         try {
           await deleteProduct(id);
-          await loadData();
           notify("Product deleted.", "success");
         } catch (err: any) {
+          await loadData(); // revert on error
+          notify(`Failed: ${err.message}`, "error");
+        }
+      }
+    );
+  };
+
+  const handleDeleteOrder = (type: 'normal' | 'custom', id: string) => {
+    confirm(
+      "Delete Record?",
+      "This order record will be permanently deleted.",
+      async () => {
+        // Optimistic update: remove immediately from UI
+        if (type === 'normal') {
+          setOrders(prev => prev.filter(o => o.id !== id));
+        } else {
+          setCustomOrders(prev => prev.filter(o => o.id !== id));
+        }
+        try {
+          const action = type === 'normal' ? deleteOrder(id) : deleteCustomOrder(id);
+          await action;
+          notify("Record deleted.", "success");
+        } catch (err: any) {
+          await loadData(); // revert on error
           notify(`Failed: ${err.message}`, "error");
         }
       }
@@ -169,11 +199,30 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const handleStatusUpdate = async (type: 'normal' | 'custom', id: string, status: OrderStatus) => {
+    // Optimistic update: reflect status change in UI immediately
+    // Capture old status before updating state to avoid stale closure issues
+    if (type === 'normal') {
+      const oldStatus = orders.find(o => o.id === id)?.status;
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+      if (oldStatus === OrderStatus.PENDING && status !== OrderStatus.PENDING) {
+        setPendingOrdersCount(prev => Math.max(0, prev - 1));
+      } else if (oldStatus !== OrderStatus.PENDING && status === OrderStatus.PENDING) {
+        setPendingOrdersCount(prev => prev + 1);
+      }
+    } else {
+      const oldStatus = customOrders.find(o => o.id === id)?.status;
+      setCustomOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+      if (oldStatus === OrderStatus.PENDING && status !== OrderStatus.PENDING) {
+        setPendingCustomCount(prev => Math.max(0, prev - 1));
+      } else if (oldStatus !== OrderStatus.PENDING && status === OrderStatus.PENDING) {
+        setPendingCustomCount(prev => prev + 1);
+      }
+    }
     try {
         await updateOrderStatus(type, id, status);
-        await loadData();
         notify(`Order status updated to ${status}.`, "success");
     } catch (err) {
+        await loadData(); // revert optimistic update on error
         notify('Failed to update status', 'error');
     }
   };
@@ -293,20 +342,17 @@ export const AdminDashboard: React.FC = () => {
         <div className="flex flex-row flex-wrap gap-2 pt-3 border-t border-slate-700 md:flex-col md:border-t-0 md:pt-0 md:border-l md:border-slate-700 md:pl-4 md:min-w-[140px]">
            {order.status === OrderStatus.PENDING && (
              <>
-               <button onClick={() => handleStatusUpdate(order.type, order.id, OrderStatus.CONFIRMED)} className="flex-1 bg-green-600 text-white text-[10px] font-black py-3 px-2 rounded-xl hover:bg-green-700 shadow-md transition-all active:scale-95 uppercase tracking-wider">Accept</button>
-               <button onClick={() => handleStatusUpdate(order.type, order.id, OrderStatus.CANCELLED)} className="flex-1 border-2 border-red-900/50 text-red-400 text-[10px] font-black py-3 px-2 rounded-xl hover:bg-red-900/20 transition-all active:scale-95 uppercase tracking-wider">Decline</button>
+               <button onClick={() => handleStatusUpdate(order.type, order.id, OrderStatus.CONFIRMED)} className="flex-1 bg-green-600 text-white text-[10px] font-black py-3 px-2 rounded-xl hover:bg-green-700 shadow-md transition-all active:scale-95 uppercase tracking-wider">{t('admin_accept')}</button>
+               <button onClick={() => handleStatusUpdate(order.type, order.id, OrderStatus.CANCELLED)} className="flex-1 border-2 border-red-900/50 text-red-400 text-[10px] font-black py-3 px-2 rounded-xl hover:bg-red-900/20 transition-all active:scale-95 uppercase tracking-wider">{t('admin_decline')}</button>
              </>
            )}
            {order.status === OrderStatus.CONFIRMED && (
              <button onClick={() => handleStatusUpdate(order.type, order.id, OrderStatus.COMPLETED)} className="w-full bg-teal-600 text-white text-[10px] font-black py-4 rounded-xl hover:bg-teal-700 shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 uppercase tracking-widest">
-                <CheckCircle2 className="h-4 w-4" /> Mark Completed
+                <CheckCircle2 className="h-4 w-4" /> {t('admin_complete')}
              </button>
            )}
            {(order.status === OrderStatus.COMPLETED || order.status === OrderStatus.CANCELLED) && (
-             <button onClick={() => confirm("Delete Record?", "This order record will be permanently deleted.", () => {
-                const action = order.type === 'normal' ? deleteOrder(order.id) : deleteCustomOrder(order.id);
-                action.then(() => { loadData(); notify("Record deleted.", "success"); });
-             })} className="text-slate-500 hover:text-red-400 p-3 rounded-full hover:bg-red-900/20 transition-all mx-auto">
+             <button onClick={() => handleDeleteOrder(order.type, order.id)} className="text-slate-500 hover:text-red-400 p-3 rounded-full hover:bg-red-900/20 transition-all mx-auto">
                 <Trash2 className="h-6 w-6" />
              </button>
            )}
@@ -321,8 +367,8 @@ export const AdminDashboard: React.FC = () => {
       <div className="bg-gradient-to-r from-slate-800 to-teal-900 border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Management Hub</h1>
-            <p className="text-slate-400 text-sm mt-0.5 font-medium">VKM Flowers — Operational Control</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{t('admin_hub')}</h1>
+            <p className="text-slate-400 text-sm mt-0.5 font-medium">{t('admin_subtitle')}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3">
@@ -330,7 +376,7 @@ export const AdminDashboard: React.FC = () => {
             <div className="bg-slate-700/50 border border-slate-600 rounded-2xl px-4 py-2.5 flex items-center gap-3 w-full sm:w-auto">
               <Phone className="h-4 w-4 text-teal-400 flex-shrink-0" />
               <div className="flex-grow min-w-0">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">WhatsApp Number</label>
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">{t('admin_whatsapp')}</label>
                 <input
                   className="bg-transparent text-sm font-bold text-white outline-none w-full sm:w-32 placeholder-slate-500"
                   value={adminPhone}
@@ -345,13 +391,13 @@ export const AdminDashboard: React.FC = () => {
             {/* Tab switcher */}
             <div className="flex p-1.5 bg-slate-700/50 rounded-2xl border border-slate-600 overflow-x-auto w-full sm:w-auto">
               <button onClick={() => setActiveTab('products')} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'products' ? 'bg-teal-500 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>
-                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Catalog
+                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {t('admin_catalog')}
               </button>
               <button onClick={() => setActiveTab('orders')} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'orders' ? 'bg-teal-500 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>
-                <ListChecks className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Orders {pendingOrdersCount > 0 && <span className="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-black">{pendingOrdersCount}</span>}
+                <ListChecks className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {t('admin_orders')} {pendingOrdersCount > 0 && <span className="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-black">{pendingOrdersCount}</span>}
               </button>
               <button onClick={() => setActiveTab('custom')} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'custom' ? 'bg-teal-500 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>
-                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Custom {pendingCustomCount > 0 && <span className="bg-purple-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-black">{pendingCustomCount}</span>}
+                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {t('admin_custom')} {pendingCustomCount > 0 && <span className="bg-purple-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-black">{pendingCustomCount}</span>}
               </button>
             </div>
           </div>
@@ -365,27 +411,27 @@ export const AdminDashboard: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <h2 className="text-xl font-black flex items-center gap-2.5 text-white"><ShoppingBag className="h-5 w-5 text-teal-400" /> Product Catalog</h2>
             <button onClick={() => { setIsAddingProduct(!isAddingProduct); if(isAddingProduct) resetForm(); }} className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 font-bold uppercase text-xs tracking-widest">
-              {isAddingProduct ? <><Ban className="h-4 w-4" /> Cancel</> : <><Plus className="h-4 w-4" /> Add New Item</>}
+              {isAddingProduct ? <><Ban className="h-4 w-4" /> {t('admin_cancel')}</> : <><Plus className="h-4 w-4" /> {t('admin_add_item')}</>}
             </button>
           </div>
 
           {isAddingProduct && (
             <div className="bg-slate-800 border border-slate-600 p-6 sm:p-8 rounded-3xl shadow-2xl">
               <h3 className="text-lg font-black text-white mb-6 border-b border-slate-700 pb-4">
-                {editingProduct ? 'Update Product' : 'New Product'}
+                {editingProduct ? t('admin_update_product') : t('admin_new_product')}
               </h3>
               <form onSubmit={handleSaveProduct} className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Product Name</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('admin_product_name')}</label>
                   <input className="w-full bg-slate-700 border-2 border-slate-600 text-white placeholder-slate-500 p-3 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium transition-all" value={newProd.title} onChange={e => setNewProd({...newProd, title: e.target.value})} required />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Price (₹)</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('admin_price')}</label>
                     <input type="text" inputMode="numeric" pattern="[0-9]*" className="w-full bg-slate-700 border-2 border-slate-600 text-white placeholder-slate-500 p-3 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium transition-all" placeholder="e.g. 499" value={newProd.price ?? ''} onChange={e => { const v = e.target.value.replace(/[^0-9]/g,''); setNewProd({...newProd, price: v === '' ? undefined : Number(v)}); }} required />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Prep Hours</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('admin_prep_hours')}</label>
                     <input type="text" inputMode="numeric" pattern="[0-9]*" className="w-full bg-slate-700 border-2 border-slate-600 text-white placeholder-slate-500 p-3 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium transition-all" placeholder="e.g. 24" value={newProd.durationHours ?? ''} onChange={e => { const v = e.target.value.replace(/[^0-9]/g,''); setNewProd({...newProd, durationHours: v === '' ? undefined : Number(v)}); }} required />
                   </div>
                 </div>
@@ -393,7 +439,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="md:col-span-2 border-2 border-dashed border-slate-600 rounded-2xl p-6 bg-slate-700/30 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <Upload className="h-6 w-6 text-slate-500" />
-                    <p className="font-bold text-slate-300 text-sm">Gallery Photos</p>
+                    <p className="font-bold text-slate-300 text-sm">{t('admin_gallery')}</p>
                     <label className="flex items-center justify-center px-5 py-2.5 border-2 border-teal-500 text-teal-400 rounded-xl font-bold bg-transparent hover:bg-teal-500 hover:text-white cursor-pointer transition-all shadow-sm active:scale-95 uppercase text-xs tracking-widest">
                       Browse Files
                       <input type="file" className="hidden" multiple accept="image/*" onChange={handleImageUpload} />
@@ -412,13 +458,13 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Description <span className="normal-case font-normal text-slate-500">(optional)</span></label>
-                  <textarea rows={4} className="w-full bg-slate-700 border-2 border-slate-600 text-white placeholder-slate-500 p-3 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium transition-all resize-none" value={newProd.description} onChange={e => setNewProd({...newProd, description: e.target.value})} />
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('admin_description')}</label>
+                  <textarea rows={4} className="w-full bg-slate-700 border-2 border-slate-600 text-white placeholder-slate-500 p-3 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium transition-all resize-none" value={newProd.description ?? ''} onChange={e => setNewProd({...newProd, description: e.target.value || undefined})} />
                 </div>
                 <div className="md:col-span-2 flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-slate-700">
-                  <button type="button" onClick={resetForm} className="px-6 py-3 text-slate-400 font-bold hover:bg-slate-700 rounded-2xl uppercase tracking-widest text-xs transition-all">Cancel</button>
+                  <button type="button" onClick={resetForm} className="px-6 py-3 text-slate-400 font-bold hover:bg-slate-700 rounded-2xl uppercase tracking-widest text-xs transition-all">{t('admin_cancel')}</button>
                   <button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl shadow-lg uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all active:scale-95">
-                    {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : (editingProduct ? "Update Item" : "Save Item")}
+                    {isSubmitting ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('admin_saving')}</> : (editingProduct ? t('admin_update') : t('admin_save'))}
                   </button>
                 </div>
               </form>
@@ -428,7 +474,7 @@ export const AdminDashboard: React.FC = () => {
           {products.length === 0 ? (
             <div className="text-center py-20 bg-slate-800 rounded-3xl border border-dashed border-slate-700">
               <ShoppingBag className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">No products in catalog yet.</p>
+              <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">{t('admin_no_products')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -469,7 +515,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-1">
               <Bell className="h-4 w-4 text-yellow-400" />
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">Inbound ({filteredPending.length})</h3>
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">{t('admin_inbound')} ({filteredPending.length})</h3>
             </div>
             <div className="space-y-3">
               {filteredPending.length === 0 ? (
@@ -488,7 +534,7 @@ export const AdminDashboard: React.FC = () => {
                   Queue Progress ({filteredActive.length})
                 </h3>
               </div>
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-3 py-1 rounded-full border border-slate-700">Priority: Deadline</span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-3 py-1 rounded-full border border-slate-700">{t('admin_priority')}</span>
             </div>
             <div className="space-y-3">
               {filteredActive.length === 0 ? (
@@ -500,7 +546,7 @@ export const AdminDashboard: React.FC = () => {
 
             {filteredHistory.length > 0 && (
               <div className="mt-12 space-y-4">
-                <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] px-1">History</h3>
+                <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] px-1">{t('admin_history')}</h3>
                 <div className="space-y-2">
                   {filteredHistory.slice(0, 10).map((o: any) => (
                     <div key={o.id} className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-wrap justify-between items-center gap-3 group hover:border-slate-600 transition-all">
@@ -515,10 +561,7 @@ export const AdminDashboard: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-3 ml-auto">
                         <StatusBadge status={o.status} />
-                        <button onClick={() => confirm("Delete Record?", "This order record will be permanently deleted.", () => {
-                          const action = o.type === 'normal' ? deleteOrder(o.id) : deleteCustomOrder(o.id);
-                          action.then(() => { loadData(); notify("Record deleted.", "success"); });
-                        })} className="text-slate-600 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded-full">
+                        <button onClick={() => handleDeleteOrder(o.type, o.id)} className="text-slate-600 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded-full">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { register, googleLogin } from '../services/storage';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Flower2, MapPin, Star } from 'lucide-react';
 import { UserRole } from '../types';
@@ -14,6 +15,7 @@ export const Signup: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { loginUser } = useAuth();
   const { notify } = useNotification();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
@@ -122,27 +124,27 @@ export const Signup: React.FC = () => {
               </div>
               <span className="font-black text-gray-900">VKM Flowers</span>
             </div>
-            <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-1">Create account</h2>
-            <p className="text-gray-500 font-medium">Fill in your details to get started</p>
+            <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-1">{t('signup_title')}</h2>
+            <p className="text-gray-500 font-medium">{t('signup_subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">Full Name</label>
-              <input type="text" required className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all" placeholder="Your full name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">{t('signup_name')}</label>
+              <input type="text" required className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all" placeholder={t('signup_name_ph')} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">Email</label>
+              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">{t('signup_email')}</label>
               <input type="email" required className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all" placeholder="you@example.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">Password</label>
+              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">{t('signup_password')}</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 pr-12 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all"
-                  placeholder="Create a strong password"
+                  placeholder={t('signup_password_ph')}
                   value={formData.password}
                   onChange={e => setFormData({...formData, password: e.target.value})}
                 />
@@ -157,7 +159,7 @@ export const Signup: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">Phone Number (10 digits)</label>
+              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">{t('signup_phone')}</label>
               <input
                 type="tel"
                 pattern="[0-9]{10}"
@@ -173,17 +175,17 @@ export const Signup: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">City</label>
+                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">{t('signup_city')}</label>
                 <input type="text" value="Kanchipuram" disabled className="w-full bg-gray-100 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-400 cursor-not-allowed" />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">Area</label>
-                <input type="text" placeholder="Your area" required className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all" value={formData.area} onChange={e => setFormData({...formData, area: e.target.value})} />
+                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">{t('signup_area')}</label>
+                <input type="text" placeholder={t('signup_area_ph')} required className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all" value={formData.area} onChange={e => setFormData({...formData, area: e.target.value})} />
               </div>
             </div>
 
             <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-100 hover:from-blue-600 hover:to-indigo-700 hover:-translate-y-0.5 transition-all active:scale-[0.98] text-sm mt-1">
-              Create Free Account
+              {t('signup_btn')}
             </button>
           </form>
 
@@ -195,8 +197,8 @@ export const Signup: React.FC = () => {
           <div ref={googleBtnRef} className="flex justify-center" />
 
           <div className="text-center mt-5">
-            <span className="text-gray-500 text-sm font-medium">Already have an account? </span>
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-bold text-sm underline decoration-2 underline-offset-4 transition-colors">Log in</Link>
+            <span className="text-gray-500 text-sm font-medium">{t('signup_have_account')} </span>
+            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-bold text-sm underline decoration-2 underline-offset-4 transition-colors">{t('signup_login')}</Link>
           </div>
         </div>
       </div>

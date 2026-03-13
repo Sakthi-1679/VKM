@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { login, googleLogin } from '../services/storage';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserRole } from '../types';
@@ -13,6 +14,7 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { loginUser } = useAuth();
   const { notify } = useNotification();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
@@ -119,24 +121,24 @@ export const Login: React.FC = () => {
               </div>
               <span className="font-black text-gray-900">VKM Flowers</span>
             </div>
-            <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-1">Log in</h2>
-            <p className="text-gray-500 font-medium">Enter your credentials to continue</p>
+            <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-1">{t('login_title')}</h2>
+            <p className="text-gray-500 font-medium">{t('login_subtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">Email Address</label>
+              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">{t('login_email')}</label>
               <input
                 type="email"
                 required
                 className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-50 transition-all"
-                placeholder="you@example.com"
+                placeholder={t('login_email_ph')}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">Password</label>
+              <label className="text-xs font-bold text-gray-600 uppercase tracking-widest block mb-2">{t('login_password')}</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -157,7 +159,7 @@ export const Login: React.FC = () => {
               </div>
             </div>
             <button type="submit" className="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-violet-100 hover:from-violet-700 hover:to-purple-700 hover:-translate-y-0.5 transition-all active:scale-[0.98] text-sm">
-              Sign In
+              {t('login_btn')}
             </button>
           </form>
 
@@ -169,13 +171,13 @@ export const Login: React.FC = () => {
           <div ref={googleBtnRef} className="flex justify-center" />
 
           <div className="text-center mt-6">
-            <span className="text-gray-500 text-sm font-medium">Don't have an account? </span>
-            <Link to="/signup" className="text-violet-600 hover:text-violet-700 font-bold text-sm underline decoration-2 underline-offset-4 transition-colors">Create one free</Link>
+            <span className="text-gray-500 text-sm font-medium">{t('login_no_account')} </span>
+            <Link to="/signup" className="text-violet-600 hover:text-violet-700 font-bold text-sm underline decoration-2 underline-offset-4 transition-colors">{t('login_create')}</Link>
           </div>
 
           <div className="mt-8 pt-6 border-t border-gray-100 text-center">
             <p className="text-[11px] text-gray-400 font-medium tracking-wide">
-              Securely managed by VKM Flower Shop Systems
+              {t('login_secure')}
             </p>
           </div>
         </div>

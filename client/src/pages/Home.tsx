@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Product, UserRole } from '../types';
 import { getProducts, placeOrder, getAdminContact } from '../services/storage';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNotification } from '../context/NotificationContext';
 import { Search, ShoppingCart, Clock, Info, ShieldAlert, Loader2, Flower2, ChevronLeft, ChevronRight, ZoomIn, X, Sparkles, Truck, BadgeCheck, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -18,22 +19,29 @@ export const Home: React.FC = () => {
   const [zoomedIndex, setZoomedIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useAuth();
+  const { t } = useLanguage();
   const { notify } = useNotification();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const loadProducts = useCallback(() => {
     getProducts()
       .then((data) => {
         setProducts(data);
       })
-      .catch(err => {
-        console.warn("Could not fetch products, showing empty list.");
-        setProducts([]);
+      .catch(() => {
+        // silently keep existing data on poll errors
       })
       .finally(() => {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    loadProducts();
+    // Auto-refresh every 5 seconds so new/removed items appear without manual reload
+    const interval = setInterval(loadProducts, 5000);
+    return () => clearInterval(interval);
+  }, [loadProducts]);
 
   const openZoom = (images: string[], index = 0) => {
     setZoomedImages(images);
@@ -130,20 +138,20 @@ export const Home: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 relative z-10">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full mb-5 border border-white/30">
-                <Sparkles className="h-3.5 w-3.5" /> Kanchipuram's #1 Flower Shop
+                <Sparkles className="h-3.5 w-3.5" /> {t('hero_badge')}
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-4">
-                Fresh Flowers,<br /><span className="text-pink-100">Delivered Today</span>
+                {t('hero_title')}<br /><span className="text-pink-100">{t('hero_title2')}</span>
               </h1>
               <p className="text-rose-100 text-base md:text-lg mb-8 font-medium max-w-lg leading-relaxed">
-                Handpicked blooms for every occasion. Browse our fresh collection and order with ease.
+                {t('hero_subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <a href="#products" className="inline-flex items-center justify-center gap-2 bg-white text-rose-600 font-black px-6 py-3.5 rounded-2xl hover:bg-rose-50 transition-all shadow-xl text-sm">
-                  <Flower2 className="h-4 w-4" /> Shop Now
+                  <Flower2 className="h-4 w-4" /> {t('hero_shop_now')}
                 </a>
                 <button onClick={() => navigate('/signup')} className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white font-bold px-6 py-3.5 rounded-2xl border border-white/30 hover:bg-white/20 transition-all text-sm">
-                  Create Account
+                  {t('hero_create_account')}
                 </button>
               </div>
             </div>
@@ -151,9 +159,9 @@ export const Home: React.FC = () => {
           <div className="border-t border-white/10 bg-black/10 backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
               <div className="flex flex-wrap gap-5 justify-center md:justify-start text-white/90 text-xs font-semibold">
-                <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /> Fast Delivery</span>
-                <span className="flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5" /> Fresh Guaranteed</span>
-                <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" /> Premium Quality</span>
+                <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /> {t('hero_fast_delivery')}</span>
+                <span className="flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5" /> {t('hero_fresh')}</span>
+                <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" /> {t('hero_quality')}</span>
               </div>
             </div>
           </div>
@@ -167,10 +175,10 @@ export const Home: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-                {isAuthenticated ? 'Our Collection' : 'Browse Flowers'}
+                {isAuthenticated ? t('section_our_collection') : t('section_browse_flowers')}
               </h2>
               <p className="text-gray-400 text-sm mt-0.5 font-medium">
-                {loading ? 'Loading...' : `${filteredProducts.length} arrangement${filteredProducts.length !== 1 ? 's' : ''} available`}
+                {loading ? 'Loading...' : `${filteredProducts.length} ${filteredProducts.length !== 1 ? t('arrangements_available') : t('arrangement_available')}`}
               </p>
             </div>
             <div className="relative w-full sm:w-72">
@@ -178,7 +186,7 @@ export const Home: React.FC = () => {
               <input
                 type="text"
                 className="w-full pl-10 pr-4 py-3 bg-white border-2 border-gray-100 rounded-2xl shadow-sm placeholder-gray-300 focus:outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 text-sm font-medium transition-all"
-                placeholder="Search arrangements..."
+                placeholder={t('search_placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -188,7 +196,7 @@ export const Home: React.FC = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 text-gray-400">
               <Loader2 className="h-10 w-10 animate-spin mb-4 text-rose-400" />
-              <p className="font-bold text-sm tracking-widest uppercase">Loading Collection...</p>
+              <p className="font-bold text-sm tracking-widest uppercase">{t('loading_collection')}</p>
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
@@ -242,8 +250,8 @@ export const Home: React.FC = () => {
               <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Info className="h-10 w-10 text-rose-300" />
               </div>
-              <h3 className="text-lg font-black text-gray-900 mb-1">No Arrangements Found</h3>
-              <p className="text-gray-400 text-sm">Try a different search term or check back later.</p>
+              <h3 className="text-lg font-black text-gray-900 mb-1">{t('no_arrangements')}</h3>
+              <p className="text-gray-400 text-sm">{t('no_arrangements_sub')}.</p>
             </div>
           )}
         </div>
@@ -328,12 +336,12 @@ export const Home: React.FC = () => {
                 <p className="text-gray-500 text-sm mb-4 leading-relaxed">{selectedProduct.description}</p>
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-5 bg-rose-50 px-4 py-2.5 rounded-xl">
                   <Clock className="h-4 w-4 text-rose-400 flex-shrink-0" />
-                  <span className="font-medium">Ready in <strong className="text-rose-600">{selectedProduct.durationHours} hours</strong></span>
+                  <span className="font-medium">{t('ready_in', { n: selectedProduct.durationHours })}</span>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-2">Quantity</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-2">{t('order_quantity')}</label>
                     <div className="flex items-center gap-3">
                       <button onClick={() => setOrderQty(Math.max(1, orderQty - 1))} className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-rose-100 hover:text-rose-600 font-black text-xl transition-all flex items-center justify-center">−</button>
                       <span className="text-xl font-black text-gray-900 w-8 text-center">{orderQty}</span>
@@ -341,11 +349,11 @@ export const Home: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-2">Special Note (optional)</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-2">{t('order_note')}</label>
                     <textarea
                       rows={3}
                       className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 focus:outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-none"
-                      placeholder="Any special requests..."
+                      placeholder={t('order_note_placeholder')}
                       value={orderNote}
                       onChange={e => setOrderNote(e.target.value)}
                     />
@@ -355,7 +363,7 @@ export const Home: React.FC = () => {
 
               <div className="p-5 border-t border-gray-50 bg-white">
                 <button onClick={submitOrder} className="w-full bg-gradient-to-r from-rose-500 to-rose-600 text-white font-black py-4 rounded-2xl hover:from-rose-600 hover:to-rose-700 transition-all shadow-xl shadow-rose-100 flex items-center justify-center gap-2 uppercase tracking-wider text-sm active:scale-[0.98]">
-                  <ShoppingCart className="h-5 w-5" /> Place Order via WhatsApp
+                  <ShoppingCart className="h-5 w-5" /> {t('place_order')}
                 </button>
               </div>
             </div>

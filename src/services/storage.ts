@@ -73,6 +73,21 @@ const storeCsrfToken = (token: string) => {
   localStorage.setItem('vkm_csrf', token);
 };
 
+// SECURITY: Fetch a fresh CSRF token from the server using the stored JWT.
+// Called on session restore so that users with an existing JWT but no CSRF token
+// (e.g. different deployment, cleared storage, or pre-CSRF session) can still
+// perform state-changing requests without being forced to re-login.
+export const refreshCsrfToken = async (): Promise<void> => {
+  try {
+    const data = await apiRequest('/csrf-token');
+    if (data.csrfToken) storeCsrfToken(data.csrfToken);
+  } catch (e: any) {
+    console.warn('Failed to refresh CSRF token:', e?.message ?? e);
+    // Silently degrade – the user will see a CSRF error only if they try a
+    // state-changing request, which will prompt them to log in again.
+  }
+};
+
 // Auth
 export const login = async (email: string, password: string): Promise<AuthResponse> => {
   const data = await apiRequest('/login', 'POST', { email, password });

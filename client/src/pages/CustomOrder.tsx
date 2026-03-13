@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { placeCustomOrder, getAdminContact } from '../services/storage';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Calendar, Clock, User as UserIcon, Phone, FileText, X, Loader2, Sparkles } from 'lucide-react';
@@ -9,6 +10,7 @@ import { Upload, Calendar, Clock, User as UserIcon, Phone, FileText, X, Loader2,
 export const CustomOrderForm: React.FC = () => {
   const { user } = useAuth();
   const { notify } = useNotification();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -107,8 +109,8 @@ export const CustomOrderForm: React.FC = () => {
               <Sparkles className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-white tracking-tight">Custom Creations</h2>
-              <p className="text-orange-100 font-medium text-sm mt-0.5">Share your vision, we bring the flowers</p>
+              <h2 className="text-2xl font-black text-white tracking-tight">{t('custom_title')}</h2>
+              <p className="text-orange-100 font-medium text-sm mt-0.5">{t('custom_subtitle')}</p>
             </div>
           </div>
         </div>
@@ -118,13 +120,13 @@ export const CustomOrderForm: React.FC = () => {
           {/* Reference Images */}
           <div className="space-y-3">
             <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-              <Upload className="h-3.5 w-3.5 text-orange-500" /> Reference Photos (Required)
+              <Upload className="h-3.5 w-3.5 text-orange-500" /> {t('ref_photos')}
             </label>
             <label className="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-orange-200 rounded-2xl cursor-pointer bg-orange-50 hover:bg-orange-100/50 transition-all group">
               <div className="flex flex-col items-center py-5">
                 <Upload className="w-9 h-9 mb-3 text-orange-300 group-hover:text-orange-500 transition-colors" />
-                <p className="text-sm text-gray-600 font-semibold"><span className="text-orange-600 font-bold">Click to upload</span> reference photos</p>
-                <p className="text-[11px] text-gray-400 mt-1 font-medium">PNG, JPG up to 10MB each</p>
+                <p className="text-sm text-gray-600 font-semibold"><span className="text-orange-600 font-bold">{t('upload_click')}</span> {t('upload_photos')}</p>
+                <p className="text-[11px] text-gray-400 mt-1 font-medium">{t('photo_format')}</p>
               </div>
               <input type="file" className="hidden" multiple onChange={handleFileChange} />
             </label>
@@ -146,7 +148,7 @@ export const CustomOrderForm: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-                <Calendar className="h-3.5 w-3.5 text-orange-500" /> Required Date
+                <Calendar className="h-3.5 w-3.5 text-orange-500" /> {t('required_date')}
               </label>
               <input type="date" required className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
                 value={formData.requestedDate} onChange={e => setFormData({...formData, requestedDate: e.target.value})}
@@ -154,7 +156,7 @@ export const CustomOrderForm: React.FC = () => {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 text-orange-500" /> Preferred Time
+                <Clock className="h-3.5 w-3.5 text-orange-500" /> {t('preferred_time')}
               </label>
               <input type="time" required className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
                 value={formData.requestedTime} onChange={e => setFormData({...formData, requestedTime: e.target.value})}
@@ -166,15 +168,15 @@ export const CustomOrderForm: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-                <UserIcon className="h-3.5 w-3.5 text-orange-500" /> Recipient Name
+                <UserIcon className="h-3.5 w-3.5 text-orange-500" /> {t('recipient_name')}
               </label>
-              <input type="text" required placeholder="Who is this for?" className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
+              <input type="text" required placeholder={t('recipient_placeholder')} className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
                 value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})}
               />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-                <Phone className="h-3.5 w-3.5 text-orange-500" /> Contact Phone
+                <Phone className="h-3.5 w-3.5 text-orange-500" /> {t('contact_phone')}
               </label>
               <input
                 type="tel"
@@ -182,7 +184,7 @@ export const CustomOrderForm: React.FC = () => {
                 pattern="[0-9]{10}"
                 minLength={10}
                 maxLength={10}
-                placeholder="10-digit mobile number"
+                placeholder={t('phone_placeholder')}
                 className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
                 value={formData.contactPhone}
                 onChange={e => setFormData({...formData, contactPhone: e.target.value.replace(/\D/g, '')})}
@@ -193,19 +195,19 @@ export const CustomOrderForm: React.FC = () => {
           {/* Description */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-              <FileText className="h-3.5 w-3.5 text-orange-500" /> Describe Your Request
+              <FileText className="h-3.5 w-3.5 text-orange-500" /> {t('describe_request')}
             </label>
-            <textarea required rows={5} className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all resize-none"
-              placeholder="Tell us about the colors, flower types, occasion, and any specific requirements..."
+            <textarea rows={5} className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all resize-none"
+              placeholder={t('describe_placeholder')}
               value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
             />
           </div>
 
           <div className="pt-4 border-t border-gray-100 space-y-3">
             <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-100 hover:from-orange-600 hover:to-amber-600 hover:-translate-y-0.5 active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
-              {loading ? <><Loader2 className="h-5 w-5 animate-spin" /> Submitting Request...</> : 'Submit Custom Order'}
+              {loading ? <><Loader2 className="h-5 w-5 animate-spin" /> {t('submitting')}</> : t('submit_order')}
             </button>
-            <p className="text-center text-xs text-gray-400 font-medium">We will call you within 2 hours to confirm your order</p>
+            <p className="text-center text-xs text-gray-400 font-medium">{t('call_confirm')}</p>
           </div>
 
         </form>
