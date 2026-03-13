@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthResponse, UserRole } from '../types';
-import { getCurrentSession, logout as performLogout } from '../services/storage';
+import { getCurrentSession, logout as performLogout, refreshCsrfToken } from '../services/storage';
 
 interface AuthContextType {
   user: User | null;
@@ -19,16 +19,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const session = getCurrentSession();
-      if (session && session.user) {
-        setUser(session.user);
+    const initSession = async () => {
+      try {
+        const session = getCurrentSession();
+        if (session && session.user) {
+          setUser(session.user);
+          // If there is no CSRF token (e.g. the user logged in before CSRF was
+          // introduced, or is visiting from a different deployment URL), fetch a
+          // fresh one so admin state-changing requests are not rejected.
+          if (!localStorage.getItem('vkm_csrf')) {
+            await refreshCsrfToken();
+          }
+        }
+      } catch (e) {
+        console.error("Failed to restore session", e);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error("Failed to restore session", e);
-    } finally {
-      setLoading(false);
-    }
+    };
+    initSession();
   }, []);
 
   const loginUser = (data: AuthResponse) => {

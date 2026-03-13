@@ -63,13 +63,31 @@ const apiRequest = async (endpoint: string, method: string = 'GET', body?: any) 
   }
 };
 
-// SECURITY: Store and retrieve CSRF token
+// SECURITY: Store and retrieve CSRF token.
+// Stored in localStorage alongside the JWT so it survives page refreshes and
+// tab reopens. Using sessionStorage would lose the token while the JWT persists,
+// causing "Invalid or missing CSRF token" errors after the user closes/reopens the tab.
 const getCsrfToken = (): string | null => {
-  return sessionStorage.getItem('vkm_csrf');
+  return localStorage.getItem('vkm_csrf');
 };
 
 const storeCsrfToken = (token: string) => {
-  sessionStorage.setItem('vkm_csrf', token);
+  localStorage.setItem('vkm_csrf', token);
+};
+
+// SECURITY: Fetch a fresh CSRF token from the server using the stored JWT.
+// Called on session restore so that users with an existing JWT but no CSRF token
+// (e.g. after tab close/reopen, different deployment URL, or cleared storage)
+// can still perform state-changing requests without being forced to re-login.
+export const refreshCsrfToken = async (): Promise<void> => {
+  try {
+    const data = await apiRequest('/csrf-token');
+    if (data.csrfToken) storeCsrfToken(data.csrfToken);
+  } catch (e: any) {
+    console.warn('Failed to refresh CSRF token:', e?.message ?? e);
+    // Silently degrade – the user will see a CSRF error only if they try a
+    // state-changing request, which will prompt them to log in again.
+  }
 };
 
 // Auth
@@ -97,7 +115,8 @@ export const googleLogin = async (idToken: string): Promise<AuthResponse> => {
 
 export const logout = () => {
   localStorage.removeItem('vkm_session');
-  sessionStorage.removeItem('vkm_csrf'); // SECURITY: Clear CSRF token on logout
+  sessionStorage.removeItem('vkm_csrf'); // kept for cleanup of any legacy sessionStorage value
+  localStorage.removeItem('vkm_csrf'); // SECURITY: Clear CSRF token on logout
 };
 export const getCurrentSession = (): AuthResponse | null => {
   const session = localStorage.getItem('vkm_session');
