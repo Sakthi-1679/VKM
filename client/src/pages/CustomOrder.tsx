@@ -99,8 +99,8 @@ export const CustomOrderForm: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto my-8 px-4 sm:px-0">
       <SEO
-        title="Custom Flower Order | VKM Flowers"
-        description="Design bespoke bouquets and garlands with VKM Flowers in Chennai, Tamil Nadu. Upload reference photos and schedule your custom floral delivery."
+        title="Custom Order | VKM Flowers - Kanchipuram"
+        description="Design bespoke bouquets and garlands with VKM Flowers in Kanchipuram, Tamil Nadu. Upload reference photos and schedule your custom floral delivery."
         path="/custom-order"
       />
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">

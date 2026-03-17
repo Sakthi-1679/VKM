@@ -77,8 +77,8 @@ export const Signup: React.FC = () => {
   return (
     <div className="min-h-[calc(100vh-9rem)] flex">
       <SEO
-        title="Sign Up | VKM Flowers"
-        description="Create your VKM Flowers account to order fresh bouquets, manage deliveries, and request custom floral designs across Chennai and Kanchipuram."
+        title="Sign Up | VKM Flowers - Kanchipuram"
+        description="Create your VKM Flowers account in Kanchipuram to order fresh bouquets, manage deliveries, and request custom floral designs."
         path="/signup"
       />
       {/* Left Panel — Blue Theme */}

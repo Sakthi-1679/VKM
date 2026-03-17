@@ -85,8 +85,8 @@ const History: React.FC = () => {
   return (
     <>
       <SEO
-        title="My Orders | VKM Flowers"
-        description="View your VKM Flowers order history, delivery updates, and custom floral requests."
+        title="My Orders | VKM Flowers - Kanchipuram"
+        description="View your VKM Flowers order history, delivery updates, and custom floral requests in Kanchipuram."
         path="/history"
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">

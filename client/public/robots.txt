@@ -1,5 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /history
-Disallow: /admin
 Sitemap: https://vkmflowers.vercel.app/sitemap.xml

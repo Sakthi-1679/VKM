@@ -21,20 +21,21 @@ export const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { notify } = useNotification();
   const navigate = useNavigate();
-  const pageDescription = 'Order fresh bouquets, garlands, and custom floral arrangements from VKM Flowers in Chennai, Tamil Nadu. Same-day delivery and WhatsApp ordering available.';
+  const pageDescription = 'Order fresh bouquets, garlands, and custom floral arrangements from VKM Flowers in Kanchipuram, Tamil Nadu. Same-day delivery and WhatsApp ordering available.';
   const floristSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Florist',
+    '@type': ['LocalBusiness', 'Florist'],
     name: 'VKM Flowers',
     url: SEO_BASE_URL,
     image: `${SEO_BASE_URL}/social-share.png`,
     description: pageDescription,
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Chennai',
+      addressLocality: 'Kanchipuram',
       addressRegion: 'Tamil Nadu',
       addressCountry: 'India',
     },
+    keywords: ['flower shop Kanchipuram', 'fresh flowers Kanchipuram', 'flower delivery Kanchipuram'],
     priceRange: '₹₹',
   };
 
@@ -140,7 +141,7 @@ export const Home: React.FC = () => {
   return (
     <div>
       <SEO
-        title="VKM Flowers | Fresh Flower Delivery in Chennai & Kanchipuram"
+        title="Home | VKM Flowers - Kanchipuram"
         description={pageDescription}
         path="/"
         structuredData={floristSchema}

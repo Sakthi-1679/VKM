@@ -319,8 +319,8 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-900">
       <SEO
-        title="Admin Dashboard | VKM Flowers"
-        description="Manage VKM Flowers products, orders, custom floral requests, and customer communications from one dashboard."
+        title="Admin Dashboard | VKM Flowers - Kanchipuram"
+        description="Manage VKM Flowers products, orders, custom floral requests, and customer communications for Kanchipuram."
         path="/admin"
       />
       {/* Dark Teal Header */}

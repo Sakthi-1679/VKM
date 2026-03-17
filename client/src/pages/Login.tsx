@@ -71,8 +71,8 @@ export const Login: React.FC = () => {
   return (
     <div className="min-h-[calc(100vh-9rem)] flex">
       <SEO
-        title="Login | VKM Flowers"
-        description="Sign in to VKM Flowers to track orders, place new bouquets, and manage custom floral requests."
+        title="Login | VKM Flowers - Kanchipuram"
+        description="Sign in to VKM Flowers in Kanchipuram to track orders, place new bouquets, and manage custom floral requests."
         path="/login"
       />
       {/* Left Panel — Violet/Purple Theme */}
@@ -189,4 +189,3 @@ export const Login: React.FC = () => {
     </div>
   );
 };
-
