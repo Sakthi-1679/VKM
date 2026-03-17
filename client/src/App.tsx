@@ -3,6 +3,7 @@ import React, { useEffect, useState, lazy, Suspense, useCallback, memo } from 'r
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { useLanguage } from './context/LanguageContext';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { UserRole, OrderStatus } from './types';
@@ -38,6 +39,7 @@ StatusBadge.displayName = 'StatusBadge';
 
 const History: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [orders, setOrders] = React.useState<any[]>([]);
   const [customOrders, setCustomOrders] = React.useState<any[]>([]);
   const [adminPhone, setAdminPhone] = React.useState('');
@@ -76,17 +78,17 @@ const History: React.FC = () => {
     const now = new Date();
     const target = new Date(deadline);
     const diff = target.getTime() - now.getTime();
-    if (diff <= 0) return "Arriving shortly...";
+    if (diff <= 0) return t('சற்றுமுன் வந்து சேரும்...', 'Arriving shortly...');
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `ETA: ${hours}h ${mins}m`;
+    return t('எதிர்பார்க்கப்படும் நேரம்: {{hours}}மணி {{mins}}நிமிடம்', `ETA: ${hours}h ${mins}m`, { hours, mins });
   };
 
   return (
     <>
       <SEO
-        title="My Orders | VKM Flowers - Kanchipuram"
-        description="View your VKM Flowers order history, delivery updates, and custom floral requests in Kanchipuram."
+        title={t('என் ஆர்டர்கள் | VKM Flowers - காஞ்சிபுரம்', 'My Orders | VKM Flowers - Kanchipuram')}
+        description={t('உங்கள் ஆர்டர் வரலாறு, டெலிவரி புதுப்பிப்புகள், தனிப்பயன் கோரிக்கைகளை காஞ்சிபுரத்தில் காணலாம்.', 'View your VKM Flowers order history, delivery updates, and custom floral requests in Kanchipuram.')}
         path="/history"
       />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
@@ -100,14 +102,14 @@ const History: React.FC = () => {
               <Package className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Your Activity</h1>
-              <p className="text-emerald-100 text-sm font-medium mt-0.5">Track your orders &amp; requests</p>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{t('உங்கள் செயல்பாடு', 'Your Activity')}</h1>
+              <p className="text-emerald-100 text-sm font-medium mt-0.5">{t('உங்கள் ஆர்டர்கள் மற்றும் கோரிக்கைகளை கண்காணிக்கவும்', 'Track your orders & requests')}</p>
             </div>
           </div>
           {adminPhone && (
             <div className="bg-white/20 backdrop-blur-sm text-white px-4 py-2.5 rounded-2xl text-sm font-bold flex items-center gap-2 border border-white/20 self-start sm:self-auto">
               <Phone className="h-4 w-4" />
-              Store Support: {adminPhone}
+              {t('கடை ஆதரம்:', 'Store Support:')} {adminPhone}
             </div>
           )}
         </div>
@@ -115,12 +117,12 @@ const History: React.FC = () => {
 
       <section>
         <h2 className="text-lg font-black mb-5 flex items-center gap-2 text-gray-800">
-          <ShoppingBag className="h-5 w-5 text-emerald-500" /> Product Orders
+          <ShoppingBag className="h-5 w-5 text-emerald-500" /> {t('பொருள் ஆர்டர்கள்', 'Product Orders')}
         </h2>
         {orders.length === 0 ? (
           <div className="text-center py-12 bg-emerald-50 rounded-2xl border border-dashed border-emerald-200">
             <ShoppingBag className="h-10 w-10 text-emerald-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">You haven't placed any orders yet.</p>
+            <p className="text-gray-500 font-medium">{t('நீங்கள் இன்னும் எந்த ஆர்டரும் செய்யவில்லை.', "You haven't placed any orders yet.")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -136,7 +138,7 @@ const History: React.FC = () => {
                         <h3 className="font-black text-gray-900 line-clamp-1 text-sm" title={order.productTitle}>{order.productTitle}</h3>
                         <StatusBadge status={order.status} />
                       </div>
-                      <p className="text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">Order #{order.id}</p>
+                      <p className="text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">{t('ஆர்டர்', 'Order')} #{order.id}</p>
                       {order.status === OrderStatus.CONFIRMED && (
                         <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
                           <Clock className="h-3 w-3" /> {getTimeStatus(order.expectedDeliveryAt)}
@@ -145,13 +147,13 @@ const History: React.FC = () => {
                       {order.description && <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded-lg mt-2 italic line-clamp-2">"{order.description}"</p>}
                     </div>
                     <div className="mt-2 pt-2 border-t flex justify-between items-end">
-                      <div className="text-xs text-gray-500 font-bold">Qty: {order.quantity}</div>
+                      <div className="text-xs text-gray-500 font-bold">{t('அளவு', 'Qty')}: {order.quantity}</div>
                       <div className="text-base font-black text-emerald-600">₹{order.totalPrice}</div>
                     </div>
                   </div>
                 </div>
                 <div className="bg-emerald-50/50 px-4 py-2 border-t border-emerald-100 text-[10px] text-gray-400 flex justify-between items-center">
-                  <span className="uppercase font-bold tracking-wider">Ordered: {new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span className="uppercase font-bold tracking-wider">{t('ஆர்டர் செய்த நாள்', 'Ordered')}: {new Date(order.createdAt).toLocaleDateString()}</span>
                   <span className="flex items-center gap-1 text-emerald-500 font-bold"><Phone className="h-3 w-3" /> {adminPhone}</span>
                 </div>
               </div>
@@ -162,12 +164,12 @@ const History: React.FC = () => {
 
       <section>
         <h2 className="text-lg font-black mb-5 flex items-center gap-2 text-gray-800">
-          <FileText className="h-5 w-5 text-emerald-500" /> Custom Requests
+          <FileText className="h-5 w-5 text-emerald-500" /> {t('தனிப்பயன் கோரிக்கைகள்', 'Custom Requests')}
         </h2>
         {customOrders.length === 0 ? (
           <div className="text-center py-12 bg-emerald-50 rounded-2xl border border-dashed border-emerald-200">
             <FileText className="h-10 w-10 text-emerald-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">No custom requests found.</p>
+            <p className="text-gray-500 font-medium">{t('தனிப்பயன் கோரிக்கைகள் ஏதும் இல்லை.', 'No custom requests found.')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -175,7 +177,7 @@ const History: React.FC = () => {
               <div key={o.id} className="bg-white rounded-2xl shadow-sm border-l-4 border-l-emerald-500 border border-gray-100 p-5 hover:shadow-md hover:border-l-emerald-600 transition-all flex flex-col">
                 <div className="flex justify-between items-start mb-3 gap-2">
                   <div>
-                    <h3 className="font-black text-gray-900 text-sm">Request #{o.id}</h3>
+                    <h3 className="font-black text-gray-900 text-sm">{t('கோரிக்கை', 'Request')} #{o.id}</h3>
                     <div className="text-[10px] text-gray-400 flex items-center gap-1 mt-1 font-bold uppercase tracking-wider">
                       <Clock className="h-3 w-3" /> {new Date(o.createdAt).toLocaleDateString()}
                     </div>
@@ -188,7 +190,7 @@ const History: React.FC = () => {
                 </p>
 
                 <div className="text-xs text-emerald-600 mb-3 font-bold">
-                  <p>Required by: {o.requestedDate} at {o.requestedTime}</p>
+                  <p>{t('தேவைப்படும் நாள்', 'Required by')}: {o.requestedDate} {t('இல்', 'at')} {o.requestedTime}</p>
                   {o.status === OrderStatus.CONFIRMED && (
                     <p className="flex items-center gap-1 mt-1">
                       <Clock className="h-3 w-3" /> {getTimeStatus(o.deadlineAt)}
@@ -207,7 +209,7 @@ const History: React.FC = () => {
                 )}
 
                 <div className="pt-3 border-t mt-auto text-[10px] flex justify-end">
-                  <span className="flex items-center gap-1 text-emerald-500 font-bold uppercase tracking-widest"><Phone className="h-3 w-3" /> Contact Shop: {adminPhone}</span>
+                  <span className="flex items-center gap-1 text-emerald-500 font-bold uppercase tracking-widest"><Phone className="h-3 w-3" /> {t('கடையை தொடர்பு கொள்ள', 'Contact Shop')}: {adminPhone}</span>
                 </div>
               </div>
             ))}
