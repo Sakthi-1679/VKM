@@ -4,6 +4,7 @@ import { Product, UserRole } from '../types';
 import { getProducts, placeOrder, getAdminContact } from '../services/storage';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Search, ShoppingCart, Clock, Info, ShieldAlert, Loader2, Flower2, ChevronLeft, ChevronRight, ZoomIn, X, Sparkles, Truck, BadgeCheck, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SEO, SEO_BASE_URL } from '../components/SEO';
@@ -20,8 +21,12 @@ export const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useAuth();
   const { notify } = useNotification();
+  const { t } = useLanguage();
   const navigate = useNavigate();
-  const pageDescription = 'Order fresh bouquets, garlands, and custom floral arrangements from VKM Flowers in Kanchipuram, Tamil Nadu. Same-day delivery and WhatsApp ordering available.';
+  const pageDescription = t(
+    'காஞ்சிபுரம் VKM Flowers-ல் இருந்து புதிய பூக்குடங்கள், தூண்கள், தனிப்பயன் அலங்காரங்கள். அதே நாளில் டெலிவரி, வாட்ஸ்அப் ஆர்டர்.',
+    'Order fresh bouquets, garlands, and custom floral arrangements from VKM Flowers in Kanchipuram, Tamil Nadu. Same-day delivery and WhatsApp ordering available.'
+  );
   const floristSchema = {
     '@context': 'https://schema.org',
     '@type': ['LocalBusiness', 'Florist'],
@@ -71,7 +76,7 @@ export const Home: React.FC = () => {
 
   const handleOrderClick = (product: Product) => {
     if (user?.role === UserRole.ADMIN) {
-      notify("Administrators cannot place personal orders.", "error");
+      notify(t('நிர்வாகிகள் தனிப்பட்ட ஆர்டர்கள் இட முடியாது.', 'Administrators cannot place personal orders.'), "error");
       return;
     }
 
@@ -112,13 +117,13 @@ export const Home: React.FC = () => {
 
       window.open(`https://wa.me/91${adminPhone}?text=${encodeURIComponent(message)}`, '_blank');
       setSelectedProduct(null);
-      notify('Order placed! WhatsApp opened to notify admin.', 'success');
+      notify(t('ஆர்டர் உறுதி! வாட்ஸ்அப்பில் கடைக்காரருக்கு தகவல் அனுப்பப்பட்டது.', 'Order placed! WhatsApp opened to notify admin.'), 'success');
     } catch (e: any) {
       const msg = e?.message || '';
       if (msg.includes('Invalid token') || msg.includes('No token')) {
-        notify('Session expired. Please log out and log back in.', 'error');
+        notify(t('செஷன் காலாவதியானது. தயவுசெய்து வெளியேறி மீண்டும் உள்நுழைக.', 'Session expired. Please log out and log back in.'), 'error');
       } else {
-        notify(msg || 'Failed to place order. Please check your connection.', 'error');
+        notify(msg || t('ஆர்டர் தோல்வி. உங்கள் இணைப்பை சரிபார்க்கவும்.', 'Failed to place order. Please check your connection.'), 'error');
       }
     }
   };
@@ -140,7 +145,7 @@ export const Home: React.FC = () => {
   return (
     <div>
       <SEO
-        title="Home | VKM Flowers - Kanchipuram"
+        title={t('முகப்பு | VKM Flowers - காஞ்சிபுரம்', 'Home | VKM Flowers - Kanchipuram')}
         description={pageDescription}
         path="/"
         structuredData={floristSchema}
@@ -153,20 +158,20 @@ export const Home: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 relative z-10">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full mb-5 border border-white/30">
-                <Sparkles className="h-3.5 w-3.5" /> Kanchipuram's #1 Flower Shop
+                <Sparkles className="h-3.5 w-3.5" /> {t("காஞ்சிபுரத்தின் #1 மலர் கடை", "Kanchipuram's #1 Flower Shop")}
               </div>
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-4">
-                Fresh Flowers,<br /><span className="text-pink-100">Delivered Today</span>
+                {t('புதிய மலர்கள்,', 'Fresh Flowers,')}<br /><span className="text-pink-100">{t('இன்றே உங்கள் வீடு', 'Delivered Today')}</span>
               </h1>
               <p className="text-rose-100 text-base md:text-lg mb-8 font-medium max-w-lg leading-relaxed">
-                Handpicked blooms for every occasion. Browse our fresh collection and order with ease.
+                {t('ஒவ்வொரு நிகழ்ச்சிக்கும் கையால் தேர்ந்தெடுத்த மலர்கள். எங்கள் புதிய கலெக்ஷனை பார்வையிட்டு எளிதாக ஆர்டர் செய்யுங்கள்.', 'Handpicked blooms for every occasion. Browse our fresh collection and order with ease.')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <a href="#products" className="inline-flex items-center justify-center gap-2 bg-white text-rose-600 font-black px-6 py-3.5 rounded-2xl hover:bg-rose-50 transition-all shadow-xl text-sm">
-                  <Flower2 className="h-4 w-4" /> Shop Now
+                  <Flower2 className="h-4 w-4" /> {t('இப்போதே வாங்க', 'Shop Now')}
                 </a>
                 <button onClick={() => navigate('/signup')} className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm text-white font-bold px-6 py-3.5 rounded-2xl border border-white/30 hover:bg-white/20 transition-all text-sm">
-                  Create Account
+                  {t('கணக்கு உருவாக்கு', 'Create Account')}
                 </button>
               </div>
             </div>
@@ -174,9 +179,9 @@ export const Home: React.FC = () => {
           <div className="border-t border-white/10 bg-black/10 backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
               <div className="flex flex-wrap gap-5 justify-center md:justify-start text-white/90 text-xs font-semibold">
-                <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /> Fast Delivery</span>
-                <span className="flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5" /> Fresh Guaranteed</span>
-                <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" /> Premium Quality</span>
+                <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /> {t('வேகமான டெலிவரி', 'Fast Delivery')}</span>
+                <span className="flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5" /> {t('புதுமைக்கு உத்தரவாதம்', 'Fresh Guaranteed')}</span>
+                <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5" /> {t('பிரீமியம் தரம்', 'Premium Quality')}</span>
               </div>
             </div>
           </div>
@@ -190,10 +195,15 @@ export const Home: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-                {isAuthenticated ? 'Our Collection' : 'Browse Flowers'}
+                {isAuthenticated ? t('எங்கள் கலெக்ஷன்', 'Our Collection') : t('மலர்களை பார்வையிட', 'Browse Flowers')}
               </h2>
               <p className="text-gray-400 text-sm mt-0.5 font-medium">
-                {loading ? 'Loading...' : `${filteredProducts.length} arrangement${filteredProducts.length !== 1 ? 's' : ''} available`}
+                {loading ? t('ஏற்றப்படுகிறது...', 'Loading...') : (() => {
+                  const count = filteredProducts.length;
+                  return count === 1
+                    ? t('{{count}} அலங்காரம் தற்போது கிடைக்கிறது', '{{count}} arrangement available', { count })
+                    : t('{{count}} அலங்காரங்கள் தற்போது கிடைக்கின்றன', '{{count}} arrangements available', { count });
+                })()}
               </p>
             </div>
             <div className="relative w-full sm:w-72">
@@ -201,7 +211,7 @@ export const Home: React.FC = () => {
               <input
                 type="text"
                 className="w-full pl-10 pr-4 py-3 bg-white border-2 border-gray-100 rounded-2xl shadow-sm placeholder-gray-300 focus:outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 text-sm font-medium transition-all"
-                placeholder="Search arrangements..."
+                placeholder={t('அலங்காரங்களை தேடவும்...', 'Search arrangements...')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -211,7 +221,7 @@ export const Home: React.FC = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 text-gray-400">
               <Loader2 className="h-10 w-10 animate-spin mb-4 text-rose-400" />
-              <p className="font-bold text-sm tracking-widest uppercase">Loading Collection...</p>
+              <p className="font-bold text-sm tracking-widest uppercase">{t('கலெக்ஷன் ஏற்றப்படுகிறது...', 'Loading Collection...')}</p>
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
@@ -253,7 +263,7 @@ export const Home: React.FC = () => {
                             : 'bg-rose-500 text-white hover:bg-rose-600 shadow-md shadow-rose-100'}`}
                       >
                         {isUserAdmin ? <ShieldAlert className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" />}
-                        <span className="hidden sm:inline">{isUserAdmin ? 'Admin' : 'Order'}</span>
+                        <span className="hidden sm:inline">{isUserAdmin ? t('அட்மின்', 'Admin') : t('ஆர்டர்', 'Order')}</span>
                       </button>
                     </div>
                   </div>
@@ -265,8 +275,8 @@ export const Home: React.FC = () => {
               <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Info className="h-10 w-10 text-rose-300" />
               </div>
-              <h3 className="text-lg font-black text-gray-900 mb-1">No Arrangements Found</h3>
-              <p className="text-gray-400 text-sm">Try a different search term or check back later.</p>
+              <h3 className="text-lg font-black text-gray-900 mb-1">{t('அலங்காரங்கள் எதுவும் இல்லை', 'No Arrangements Found')}</h3>
+              <p className="text-gray-400 text-sm">{t('வேறு தேடல் சொல் முயற்சிக்கவும் அல்லது பின்னர் பார்க்கவும்.', 'Try a different search term or check back later.')}</p>
             </div>
           )}
         </div>
@@ -351,12 +361,12 @@ export const Home: React.FC = () => {
                 <p className="text-gray-500 text-sm mb-4 leading-relaxed">{selectedProduct.description}</p>
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-5 bg-rose-50 px-4 py-2.5 rounded-xl">
                   <Clock className="h-4 w-4 text-rose-400 flex-shrink-0" />
-                  <span className="font-medium">Ready in <strong className="text-rose-600">{selectedProduct.durationHours} hours</strong></span>
+                  <span className="font-medium">{t('தயார் ஆகும் நேரம்', 'Ready in')} <strong className="text-rose-600">{selectedProduct.durationHours} {t('மணி', 'hours')}</strong></span>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-2">Quantity</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-2">{t('அளவு', 'Quantity')}</label>
                     <div className="flex items-center gap-3">
                       <button onClick={() => setOrderQty(Math.max(1, orderQty - 1))} className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-rose-100 hover:text-rose-600 font-black text-xl transition-all flex items-center justify-center">−</button>
                       <span className="text-xl font-black text-gray-900 w-8 text-center">{orderQty}</span>
@@ -364,11 +374,11 @@ export const Home: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-2">Special Note (optional)</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-2">{t('சிறப்பு குறிப்பு (விருப்பம்)', 'Special Note (optional)')}</label>
                     <textarea
                       rows={3}
                       className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 focus:outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all resize-none"
-                      placeholder="Any special requests..."
+                      placeholder={t('ஏதேனும் சிறப்பு கோரிக்கைகள்...', 'Any special requests...')}
                       value={orderNote}
                       onChange={e => setOrderNote(e.target.value)}
                     />
@@ -378,7 +388,7 @@ export const Home: React.FC = () => {
 
               <div className="p-5 border-t border-gray-50 bg-white">
                 <button onClick={submitOrder} className="w-full bg-gradient-to-r from-rose-500 to-rose-600 text-white font-black py-4 rounded-2xl hover:from-rose-600 hover:to-rose-700 transition-all shadow-xl shadow-rose-100 flex items-center justify-center gap-2 uppercase tracking-wider text-sm active:scale-[0.98]">
-                  <ShoppingCart className="h-5 w-5" /> Place Order via WhatsApp
+                  <ShoppingCart className="h-5 w-5" /> {t('வாட்ஸ்அப்பில் ஆர்டர் செய்யவும்', 'Place Order via WhatsApp')}
                 </button>
               </div>
             </div>
