@@ -45,5 +45,4 @@ export const SEO: React.FC<SEOProps> = ({ title, description, path, ogImage, str
   );
 };
 
-export const canonicalUrl = buildUrl;
 export const SEO_BASE_URL = BASE_URL;
