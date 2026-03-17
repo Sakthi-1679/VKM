@@ -5,10 +5,13 @@ import { useNotification } from '../context/NotificationContext';
 import { placeCustomOrder, getAdminContact } from '../services/storage';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Calendar, Clock, User as UserIcon, Phone, FileText, X, Loader2, Sparkles } from 'lucide-react';
+import { SEO } from '../components/SEO';
+import { useLanguage } from '../context/LanguageContext';
 
 export const CustomOrderForm: React.FC = () => {
   const { user } = useAuth();
   const { notify } = useNotification();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -36,7 +39,7 @@ export const CustomOrderForm: React.FC = () => {
         const base64Images = await Promise.all(files.map(file => fileToBase64(file)));
         setImages(prev => [...prev, ...base64Images]);
       } catch (err) {
-        notify("Failed to process images.", "error");
+        notify(t("படங்களை செயல்படுத்த முடியவில்லை.", "Failed to process images."), "error");
       }
     }
   };
@@ -49,12 +52,12 @@ export const CustomOrderForm: React.FC = () => {
     e.preventDefault();
     
     if (images.length === 0) {
-      notify("Please upload at least one reference photo.", "error");
+      notify(t("குறைந்தது ஒரு குறிப்பு புகைப்படத்தை பதிவேற்றவும்.", "Please upload at least one reference photo."), "error");
       return;
     }
 
     if (!/^\d{10}$/.test(formData.contactPhone)) {
-      notify("Please enter a valid 10-digit phone number.", "error");
+      notify(t("சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்.", "Please enter a valid 10-digit phone number."), "error");
       return;
     }
 
@@ -86,10 +89,10 @@ export const CustomOrderForm: React.FC = () => {
       const waUrl = `https://wa.me/91${adminPhone}?text=${encodeURIComponent(message)}`;
       window.open(waUrl, '_blank');
 
-      notify(`Custom request submitted! WhatsApp opened – please also send your reference photos in that chat.`, 'success');
+      notify(t('தனிப்பயன் கோரிக்கை அனுப்பப்பட்டது! வாட்ஸ்அப்பில் திறக்கப்பட்டுள்ளது – புகைப்படங்களையும் அங்கே பகிரவும்.', 'Custom request submitted! WhatsApp opened – please also send your reference photos in that chat.'), 'success');
       navigate('/history');
     } catch (err: any) {
-      notify(`Submission failed: ${err.message}`, "error");
+      notify(`${t('சமர்ப்பிப்பு தோல்வியுற்றது', 'Submission failed')}: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -97,34 +100,39 @@ export const CustomOrderForm: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto my-8 px-4 sm:px-0">
+      <SEO
+        title={t('தனிப்பயன் ஆர்டர் | VKM Flowers - காஞ்சிபுரம்', 'Custom Order | VKM Flowers - Kanchipuram')}
+        description={t('தனிப்பட்ட பூக்குடங்கள், தூண்கள் வடிவமைக்கவும். குறிப்பு புகைப்படங்களை பதிவேற்றி, உங்கள் டெலிவரியை திட்டமிடவும்.', 'Design bespoke bouquets and garlands with VKM Flowers in Kanchipuram, Tamil Nadu. Upload reference photos and schedule your custom floral delivery.')}
+        path="/custom-order"
+      />
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
         {/* Orange Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-8 py-10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-300/20 rounded-full translate-x-16 -translate-y-16 blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-300/20 rounded-full -translate-x-8 translate-y-8 blur-2xl pointer-events-none"></div>
-          <div className="relative z-10 flex items-center gap-4">
-            <div className="bg-white/20 backdrop-blur p-3.5 rounded-2xl border border-white/30 flex-shrink-0">
-              <Sparkles className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-white tracking-tight">Custom Creations</h2>
-              <p className="text-orange-100 font-medium text-sm mt-0.5">Share your vision, we bring the flowers</p>
+          <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-8 py-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-300/20 rounded-full translate-x-16 -translate-y-16 blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-300/20 rounded-full -translate-x-8 translate-y-8 blur-2xl pointer-events-none"></div>
+            <div className="relative z-10 flex items-center gap-4">
+              <div className="bg-white/20 backdrop-blur p-3.5 rounded-2xl border border-white/30 flex-shrink-0">
+                <Sparkles className="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black text-white tracking-tight">{t('தனிப்பயன் உருவாக்கங்கள்', 'Custom Creations')}</h2>
+                <p className="text-orange-100 font-medium text-sm mt-0.5">{t('உங்கள் எண்ணத்தை பகிருங்கள், மலர்களை நாங்கள் கொண்டு வருகிறோம்', 'Share your vision, we bring the flowers')}</p>
+              </div>
             </div>
           </div>
-        </div>
 
         <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-7">
 
           {/* Reference Images */}
           <div className="space-y-3">
             <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-              <Upload className="h-3.5 w-3.5 text-orange-500" /> Reference Photos (Required)
+              <Upload className="h-3.5 w-3.5 text-orange-500" /> {t('குறிப்பு புகைப்படங்கள் (கட்டாயம்)', 'Reference Photos (Required)')}
             </label>
             <label className="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-orange-200 rounded-2xl cursor-pointer bg-orange-50 hover:bg-orange-100/50 transition-all group">
               <div className="flex flex-col items-center py-5">
                 <Upload className="w-9 h-9 mb-3 text-orange-300 group-hover:text-orange-500 transition-colors" />
-                <p className="text-sm text-gray-600 font-semibold"><span className="text-orange-600 font-bold">Click to upload</span> reference photos</p>
-                <p className="text-[11px] text-gray-400 mt-1 font-medium">PNG, JPG up to 10MB each</p>
+                <p className="text-sm text-gray-600 font-semibold"><span className="text-orange-600 font-bold">{t('பதிவேற்ற அழுத்தவும்', 'Click to upload')}</span> {t('குறிப்பு புகைப்படங்கள்', 'reference photos')}</p>
+                <p className="text-[11px] text-gray-400 mt-1 font-medium">{t('PNG, JPG (ஒவ்வொன்றும் 10MB வரை)', 'PNG, JPG up to 10MB each')}</p>
               </div>
               <input type="file" className="hidden" multiple onChange={handleFileChange} />
             </label>
@@ -146,7 +154,7 @@ export const CustomOrderForm: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-                <Calendar className="h-3.5 w-3.5 text-orange-500" /> Required Date
+                <Calendar className="h-3.5 w-3.5 text-orange-500" /> {t('தேவையான தேதி', 'Required Date')}
               </label>
               <input type="date" required className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
                 value={formData.requestedDate} onChange={e => setFormData({...formData, requestedDate: e.target.value})}
@@ -154,7 +162,7 @@ export const CustomOrderForm: React.FC = () => {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 text-orange-500" /> Preferred Time
+                <Clock className="h-3.5 w-3.5 text-orange-500" /> {t('விருப்பமான நேரம்', 'Preferred Time')}
               </label>
               <input type="time" required className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
                 value={formData.requestedTime} onChange={e => setFormData({...formData, requestedTime: e.target.value})}
@@ -166,15 +174,15 @@ export const CustomOrderForm: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-                <UserIcon className="h-3.5 w-3.5 text-orange-500" /> Recipient Name
+                <UserIcon className="h-3.5 w-3.5 text-orange-500" /> {t('பெறுநர் பெயர்', 'Recipient Name')}
               </label>
-              <input type="text" required placeholder="Who is this for?" className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
+              <input type="text" required placeholder={t('யாருக்காக?', 'Who is this for?')} className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
                 value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})}
               />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-                <Phone className="h-3.5 w-3.5 text-orange-500" /> Contact Phone
+                <Phone className="h-3.5 w-3.5 text-orange-500" /> {t('தொடர்பு எண்', 'Contact Phone')}
               </label>
               <input
                 type="tel"
@@ -182,7 +190,7 @@ export const CustomOrderForm: React.FC = () => {
                 pattern="[0-9]{10}"
                 minLength={10}
                 maxLength={10}
-                placeholder="10-digit mobile number"
+                placeholder={t('10 இலக்க மொபைல் எண்', '10-digit mobile number')}
                 className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all"
                 value={formData.contactPhone}
                 onChange={e => setFormData({...formData, contactPhone: e.target.value.replace(/\D/g, '')})}
@@ -193,19 +201,19 @@ export const CustomOrderForm: React.FC = () => {
           {/* Description */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
-              <FileText className="h-3.5 w-3.5 text-orange-500" /> Describe Your Request
+              <FileText className="h-3.5 w-3.5 text-orange-500" /> {t('உங்கள் கோரிக்கையை விவரிக்கவும்', 'Describe Your Request')}
             </label>
             <textarea required rows={5} className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 font-medium text-gray-900 placeholder-gray-300 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-50 transition-all resize-none"
-              placeholder="Tell us about the colors, flower types, occasion, and any specific requirements..."
+              placeholder={t('நிறங்கள், மலர் வகைகள், நிகழ்ச்சி, மற்ற கோரிக்கைகளை எழுதவும்...', 'Tell us about the colors, flower types, occasion, and any specific requirements...')}
               value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
             />
           </div>
 
           <div className="pt-4 border-t border-gray-100 space-y-3">
             <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-orange-100 hover:from-orange-600 hover:to-amber-600 hover:-translate-y-0.5 active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
-              {loading ? <><Loader2 className="h-5 w-5 animate-spin" /> Submitting Request...</> : 'Submit Custom Order'}
+              {loading ? <><Loader2 className="h-5 w-5 animate-spin" /> {t('கோரிக்கை அனுப்பப்படுகிறது...', 'Submitting Request...')}</> : t('தனிப்பயன் ஆர்டரை சமர்ப்பிக்கவும்', 'Submit Custom Order')}
             </button>
-            <p className="text-center text-xs text-gray-400 font-medium">We will call you within 2 hours to confirm your order</p>
+            <p className="text-center text-xs text-gray-400 font-medium">{t('உங்கள் ஆர்டரை உறுதிப்படுத்த 2 மணி நேரத்தில் அழைப்போம்', 'We will call you within 2 hours to confirm your order')}</p>
           </div>
 
         </form>
@@ -213,4 +221,3 @@ export const CustomOrderForm: React.FC = () => {
     </div>
   );
 };
-
