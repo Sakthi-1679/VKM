@@ -10,6 +10,7 @@ import {
   getAllCustomOrders, deleteCustomOrder
 } from '../services/storage';
 import { useNotification } from '../context/NotificationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Plus, Trash2, Clock, Upload, X, Bell, Phone, User as UserIcon, MapPin, FileText, CheckCircle2, AlertCircle, ShoppingBag, ListChecks, Sparkles, Loader2, FileDigit, Pencil, Ban } from 'lucide-react';
 import { SEO } from '../components/SEO';
 
@@ -28,6 +29,7 @@ export const AdminDashboard: React.FC = () => {
   const { notify, confirm } = useNotification();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newProd, setNewProd] = useState<Partial<Product>>({ title: '', price: undefined, durationHours: undefined, description: '', images: [] });
+  const { t } = useLanguage();
 
   const loadData = async (includePhone = false) => {
     try {
@@ -418,7 +420,9 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Description <span className="normal-case font-normal text-slate-500">(optional)</span></label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    {t('விளக்கம்', 'Description')} <span className="normal-case font-normal text-slate-500">{t('(விருப்பமானது)', '(optional)')}</span>
+                  </label>
                   <textarea rows={4} className="w-full bg-slate-700 border-2 border-slate-600 text-white placeholder-slate-500 p-3 rounded-2xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 outline-none font-medium transition-all resize-none" value={newProd.description} onChange={e => setNewProd({...newProd, description: e.target.value})} />
                 </div>
                 <div className="md:col-span-2 flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-slate-700">
