@@ -35,7 +35,6 @@ export const Home: React.FC = () => {
       addressRegion: 'Tamil Nadu',
       addressCountry: 'India',
     },
-    keywords: ['flower shop Kanchipuram', 'fresh flowers Kanchipuram', 'flower delivery Kanchipuram'],
     priceRange: '₹₹',
   };
 
