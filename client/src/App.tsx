@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, lazy, Suspense, useCallback, memo } from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { Layout } from './components/Layout';
@@ -8,6 +8,7 @@ import { Home } from './pages/Home';
 import { UserRole, OrderStatus } from './types';
 import { getAllOrders, getAllCustomOrders, getAdminContact } from './services/storage';
 import { Package, ShoppingBag, Clock, FileText, Phone, X, ZoomIn } from 'lucide-react';
+import { SEO } from './components/SEO';
 
 // PERF: Lazy-load heavy route components – they aren't needed on initial page load.
 // This splits them into separate JS chunks that load on-demand, reducing initial bundle size.
@@ -82,7 +83,13 @@ const History: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    <>
+      <SEO
+        title="My Orders | VKM Flowers"
+        description="View your VKM Flowers order history, delivery updates, and custom floral requests."
+        path="/history"
+      />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       {/* Emerald Header */}
       <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-3xl px-6 sm:px-10 py-8 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-12 translate-x-12" />
@@ -217,7 +224,8 @@ const History: React.FC = () => {
           <img src={lightboxImage} alt="Full size" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl animate-scale-up" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
@@ -235,7 +243,7 @@ const App: React.FC = () => {
   return (
     <NotificationProvider>
       <AuthProvider>
-        <HashRouter>
+        <BrowserRouter>
           <Layout>
             {/* PERF: Suspense wraps lazy-loaded routes with a lightweight spinner */}
             <Suspense fallback={<PageSpinner />}>
@@ -249,7 +257,7 @@ const App: React.FC = () => {
               </Routes>
             </Suspense>
           </Layout>
-        </HashRouter>
+        </BrowserRouter>
       </AuthProvider>
     </NotificationProvider>
   );

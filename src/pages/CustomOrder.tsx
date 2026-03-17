@@ -5,6 +5,7 @@ import { useNotification } from '../context/NotificationContext';
 import { placeCustomOrder, getAdminContact } from '../services/storage';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Calendar, Clock, User as UserIcon, Phone, FileText, X, Loader2, Sparkles } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const CustomOrderForm: React.FC = () => {
   const { user } = useAuth();
@@ -97,6 +98,11 @@ export const CustomOrderForm: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto my-8 px-4 sm:px-0">
+      <SEO
+        title="Custom Flower Order | VKM Flowers"
+        description="Design bespoke bouquets and garlands with VKM Flowers in Chennai, Tamil Nadu. Upload reference photos and schedule your custom floral delivery."
+        path="/custom-order"
+      />
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
         {/* Orange Header */}
         <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-8 py-10 relative overflow-hidden">
@@ -213,4 +219,3 @@ export const CustomOrderForm: React.FC = () => {
     </div>
   );
 };
-

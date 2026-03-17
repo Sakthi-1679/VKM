@@ -6,6 +6,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Flower2, MapPin, Star } from 'lucide-react';
 import { UserRole } from '../types';
+import { SEO } from '../components/SEO';
 
 export const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -75,6 +76,11 @@ export const Signup: React.FC = () => {
 
   return (
     <div className="min-h-[calc(100vh-9rem)] flex">
+      <SEO
+        title="Sign Up | VKM Flowers"
+        description="Create your VKM Flowers account to order fresh bouquets, manage deliveries, and request custom floral designs across Chennai and Kanchipuram."
+        path="/signup"
+      />
       {/* Left Panel — Blue Theme */}
       <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 flex-col justify-between p-12 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
@@ -203,4 +209,3 @@ export const Signup: React.FC = () => {
     </div>
   );
 };
-

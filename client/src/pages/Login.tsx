@@ -6,6 +6,7 @@ import { login, googleLogin } from '../services/storage';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserRole } from '../types';
 import { Eye, EyeOff, Flower2, Sparkles } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -69,6 +70,11 @@ export const Login: React.FC = () => {
 
   return (
     <div className="min-h-[calc(100vh-9rem)] flex">
+      <SEO
+        title="Login | VKM Flowers"
+        description="Sign in to VKM Flowers to track orders, place new bouquets, and manage custom floral requests."
+        path="/login"
+      />
       {/* Left Panel — Violet/Purple Theme */}
       <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-violet-600 via-violet-700 to-purple-800 flex-col justify-between p-12 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
@@ -183,5 +189,4 @@ export const Login: React.FC = () => {
     </div>
   );
 };
-
 

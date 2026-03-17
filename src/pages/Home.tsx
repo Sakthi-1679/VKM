@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { Search, ShoppingCart, Clock, Info, ShieldAlert, Loader2, Flower2, ChevronLeft, ChevronRight, ZoomIn, X, Sparkles, Truck, BadgeCheck, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SEO, SEO_BASE_URL } from '../components/SEO';
 
 export const Home: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -20,6 +21,22 @@ export const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { notify } = useNotification();
   const navigate = useNavigate();
+  const pageDescription = 'Order fresh bouquets, garlands, and custom floral arrangements from VKM Flowers in Chennai, Tamil Nadu. Same-day delivery and WhatsApp ordering available.';
+  const floristSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Florist',
+    name: 'VKM Flowers',
+    url: SEO_BASE_URL,
+    image: `${SEO_BASE_URL}/social-share.png`,
+    description: pageDescription,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Chennai',
+      addressRegion: 'Tamil Nadu',
+      addressCountry: 'India',
+    },
+    priceRange: '₹₹',
+  };
 
   useEffect(() => {
     getProducts()
@@ -122,6 +139,12 @@ export const Home: React.FC = () => {
 
   return (
     <div>
+      <SEO
+        title="VKM Flowers | Fresh Flower Delivery in Chennai & Kanchipuram"
+        description={pageDescription}
+        path="/"
+        structuredData={floristSchema}
+      />
       {/* Hero Banner - shown to non-authenticated users */}
       {!isAuthenticated && !loading && (
         <div className="bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 relative overflow-hidden">

@@ -11,6 +11,7 @@ import {
 } from '../services/storage';
 import { useNotification } from '../context/NotificationContext';
 import { Plus, Trash2, Clock, Upload, X, Bell, Phone, User as UserIcon, MapPin, FileText, CheckCircle2, AlertCircle, ShoppingBag, ListChecks, Sparkles, Loader2, FileDigit, Pencil, Ban } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'custom'>('products');
@@ -317,6 +318,11 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-900">
+      <SEO
+        title="Admin Dashboard | VKM Flowers"
+        description="Manage VKM Flowers products, orders, custom floral requests, and customer communications from one dashboard."
+        path="/admin"
+      />
       {/* Dark Teal Header */}
       <div className="bg-gradient-to-r from-slate-800 to-teal-900 border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
