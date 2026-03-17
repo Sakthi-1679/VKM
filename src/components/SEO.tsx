@@ -12,12 +12,7 @@ type SEOProps = {
   structuredData?: Record<string, any>;
 };
 
-const buildUrl = (path: string) => {
-  if (!path.startsWith('/')) {
-    return `${BASE_URL}/${path}`;
-  }
-  return `${BASE_URL}${path}`;
-};
+const buildUrl = (path: string) => `${BASE_URL}${path}`;
 
 export const SEO: React.FC<SEOProps> = ({ title, description, path, ogImage, structuredData }) => {
   const canonicalUrl = buildUrl(path);
