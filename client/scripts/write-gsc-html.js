@@ -14,7 +14,7 @@ if (!filename.endsWith('.html')) {
   throw new Error('GSC_HTML_FILENAME must end with .html (e.g., google12345abc.html)');
 }
 
-if (/[^A-Za-z0-9._-]/.test(filename)) {
+if (/[^A-Za-z0-9._-]/.test(filename) || filename.includes('..')) {
   throw new Error('GSC_HTML_FILENAME may only contain letters, numbers, dots, underscores, and hyphens.');
 }
 
